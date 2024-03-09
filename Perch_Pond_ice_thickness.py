@@ -55,7 +55,9 @@ def interpolate_thickness(date_group, boundary_polygon):
     # Interpolate thickness values at grid points
     thickness_grid = interpolator(points).reshape(x_grid.shape)
 
-    return thickness_grid
+    return thickness_grid, bounds["minx"], bounds["maxx"], bounds["miny"], bounds[
+        "maxy"
+    ]
 
 
 def plot_thickness_map(boundary_gdf, thickness_grid, min_x, max_x, min_y, max_y):
@@ -97,6 +99,10 @@ if __name__ == "__main__":
     date_interpolations = {}
     for date, group in obs_by_date:
         # insert this date's interpolated map
-        filtered_map = interpolate_thickness(group, boundary_polygon)
+        interpolated_map, min_x, maax_x, min_y, max_y = interpolate_thickness(
+            group, boundary_polygon
+        )
 
-    # plot_thickness_map(excel_file_path, "Perch_Pond.shp")
+        plot_thickness_map(
+            boundary_polygon, interpolated_map, min_x, maax_x, min_y, max_y
+        )
