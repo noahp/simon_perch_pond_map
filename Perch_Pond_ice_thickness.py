@@ -12,29 +12,8 @@ def read_excel_file(excel_file_path):
     # Step 1: Read the Excel file containing observations
     observations_df = pd.read_excel(excel_file_path)
 
-    @dataclass
-    class Observation:
-        latitude: float
-        longitude: float
-        thickness: float
-
-    # Python dictionary, keys are the date of observations, values are lists of Observations
-    obs_bydate = {}
-
-    for index, row in observations_df.iterrows():
-        date = row["Date"]
-        obs = Observation(row["y"], row["x"], row["Thickness"])
-        if date not in obs_bydate:
-            obs_bydate[date] = []
-        obs_bydate[date].append(obs)
-
-    # Debug, print out the dict
-    # for date in obs_bydate:
-    #     print(date)
-    #     for obs in obs_bydate[date]:
-    #         print(f"  {obs.latitude}, {obs.longitude}, {obs.thickness}")
-
-    return obs_bydate
+    # bucketize the data by the Date column, into separate dataframes
+    return observations_df.groupby("Date")
 
 
 def read_shapefile(shapefile_path):
@@ -42,12 +21,7 @@ def read_shapefile(shapefile_path):
     boundary_gdf = gpd.read_file(shapefile_path)
 
     # filter out desired polygon
-    for index, shape in boundary_gdf.iterrows():
-        if shape["GNIS_ID"] == "00872485":
-            print(shape)
-            return shape
-
-    raise ValueError("No shape found with GNIS_ID 00872485")
+    return boundary_gdf[boundary_gdf["GNIS_ID"] == "00872485"]
 
 
 def filter_observations(observations_df, boundary_gdf):
@@ -62,11 +36,11 @@ def filter_observations(observations_df, boundary_gdf):
     return observations_within_boundary
 
 
-def interpolate_thickness(observations_within_boundary, boundary_polygon):
+def interpolate_thickness(date_group, boundary_polygon):
     # Step 4: Interpolate thickness values within the boundary polygon
-    x = observations_within_boundary["longitude"]
-    y = observations_within_boundary["latitude"]
-    thickness = observations_within_boundary["thickness"]
+    x = date_group["x"]
+    y = date_group["y"]
+    thickness = date_group["Thickness"]
     interpolator = LinearNDInterpolator(list(zip(x, y)), thickness)
 
     # Step 5: Create an interpolated map of thickness values within the polygon
@@ -106,14 +80,22 @@ if __name__ == "__main__":
     excel_file_path = "S123_11f180d520ad4d4a8a82480bab5d5754_EXCEL.xlsx"
 
     # load the observations, bucketed by date of observation
+    # pandas.core.groupby.generic.DataFrameGroupBy
     obs_by_date = read_excel_file(excel_file_path)
 
     # confirm the shapefile is sane
     shapefile_path = "New_Hampshire_Hydrography_Dataset_(Waterbody)/New_Hampshire_Hydrography_Dataset_(Waterbody).shp"
-    pond_shape = read_shapefile(shapefile_path)
+    boundary_polygon = read_shapefile(shapefile_path)
 
-    # filter_observations(excel_file_path, shapefile_path)
+    # filtering is optional; we know the observations are in the polygon!
+    # eventually we'll want to bucketize a ton of observations by lake 👀
+    # yolo = filter_observations(excel_file_path, shapefile_path)
 
-    # interpolate_thickness(excel_file_path, "Perch_Pond.shp")
+    # generate interpolated maps from each observation date's group of
+    # measurements
+    date_interpolations = {}
+    for date, group in obs_by_date:
+        # insert this date's interpolated map
+        filtered_map = interpolate_thickness(group, boundary_polygon)
 
     # plot_thickness_map(excel_file_path, "Perch_Pond.shp")
