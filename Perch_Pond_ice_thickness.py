@@ -55,6 +55,9 @@ def interpolate_thickness(date_group, boundary_polygon):
     # Interpolate thickness values at grid points
     thickness_grid = interpolator(points).reshape(x_grid.shape)
 
+    # TODO this data is all [nan, nan, nan]
+    print(thickness_grid)
+
     return thickness_grid, bounds["minx"], bounds["maxx"], bounds["miny"], bounds[
         "maxy"
     ]
@@ -103,6 +106,6 @@ if __name__ == "__main__":
             group, boundary_polygon
         )
 
-        plot_thickness_map(
-            boundary_polygon, interpolated_map, min_x, maax_x, min_y, max_y
-        )
+        # plot_thickness_map(
+        #     boundary_polygon, interpolated_map, min_x, maax_x, min_y, max_y
+        # )
