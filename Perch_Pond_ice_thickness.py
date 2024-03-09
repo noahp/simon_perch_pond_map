@@ -45,9 +45,10 @@ def interpolate_thickness(date_group, boundary_polygon):
 
     # Step 5: Create an interpolated map of thickness values within the polygon
     # Create a grid of points within the boundary polygon
-    min_x, min_y, max_x, max_y = boundary_polygon.bounds
+    bounds = boundary_polygon.bounds
     x_grid, y_grid = np.meshgrid(
-        np.linspace(min_x, max_x, 100), np.linspace(min_y, max_y, 100)
+        np.linspace(bounds["minx"], bounds["maxx"], 100),
+        np.linspace(bounds["miny"], bounds["maxy"], 100),
     )
     points = np.vstack([x_grid.ravel(), y_grid.ravel()]).T
 
