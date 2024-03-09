@@ -42,9 +42,12 @@ def read_shapefile(shapefile_path):
     boundary_gdf = gpd.read_file(shapefile_path)
 
     # filter out desired polygon
-    desired_polygon = boundary_gdf[boundary_gdf["GNIS_ID"] == "00872485"]
+    for index, shape in boundary_gdf.iterrows():
+        if shape["GNIS_ID"] == "00872485":
+            print(shape)
+            return shape
 
-    return desired_polygon
+    raise ValueError("No shape found with GNIS_ID 00872485")
 
 
 def filter_observations(observations_df, boundary_gdf):
@@ -102,13 +105,14 @@ def plot_thickness_map(boundary_gdf, thickness_grid, min_x, max_x, min_y, max_y)
 if __name__ == "__main__":
     excel_file_path = "S123_11f180d520ad4d4a8a82480bab5d5754_EXCEL.xlsx"
 
+    # load the observations, bucketed by date of observation
     obs_by_date = read_excel_file(excel_file_path)
 
-    read_shapefile(
-        "New_Hampshire_Hydrography_Dataset_(Waterbody)/New_Hampshire_Hydrography_Dataset_(Waterbody).shp"
-    )
+    # confirm the shapefile is sane
+    shapefile_path = "New_Hampshire_Hydrography_Dataset_(Waterbody)/New_Hampshire_Hydrography_Dataset_(Waterbody).shp"
+    pond_shape = read_shapefile(shapefile_path)
 
-    # filter_observations(excel_file_path, "Perch_Pond.shp")
+    # filter_observations(excel_file_path, shapefile_path)
 
     # interpolate_thickness(excel_file_path, "Perch_Pond.shp")
 
