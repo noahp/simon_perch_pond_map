@@ -3,7 +3,9 @@ from dataclasses import dataclass
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+import polars as pd
+
+# import pandas as pd
 from scipy.interpolate import LinearNDInterpolator
 from shapely.geometry import Point
 
